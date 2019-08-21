@@ -1,0 +1,40 @@
+db: strichliste:strichliste@tcp(localhost:3306)/strichliste
+metrics_groups:
+  getraenke:
+    - name: Bier
+      article: Bier vom Fass 0.4 Liter
+      factor: .4
+      category: bier
+    - name: Bier
+      article: Bier vom Fass 0.5 Liter
+      factor: .5
+      category: bier
+
+    - name: Flora Mate
+      article: Flora Mate (EH18 Edition)
+      factor: .5
+      category: mate
+    - name: Club Mate
+      article: Club Mate
+      factor: .5
+      category: mate
+
+    - name: Alkoholfreier Slush
+      article: Alkoholfreier Slush
+      factor: .4
+      category: slush
+    - name: Tschunk Slush
+      article: Tschunk Slush
+      factor: .4
+      category: slush
+
+    - name: Wasser
+      article: Wasser 0,5l - VIO (medium/still)
+      factor: .5
+      category: water
+    - name: Wasser
+      article: Wasser Viva con Agua 1 Liter (leise/laut)
+      factor: 1
+      category: water
+      
+      
