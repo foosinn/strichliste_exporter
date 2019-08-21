@@ -78,7 +78,7 @@ func main() {
 	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
 		m := metric(db, mapper)
 		for k, v := range m {
-			fmt.Fprintf(w, "%s %f\n", k, v)
+			fmt.Fprintf(w, "strichliste_%s %f\n", k, v)
 		}
 	})
 	http.ListenAndServe(":8080", nil)
