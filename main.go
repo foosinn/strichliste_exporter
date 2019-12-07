@@ -32,6 +32,7 @@ type (
 
 	Config struct {
 		DB            string        `yaml:"db"`
+		Listen        string        `yaml:"listen"`
 		MetricsGroups MetricsGroups `yaml:"metrics_groups"`
 	}
 
@@ -55,6 +56,9 @@ func main() {
 	dsn, ok := os.LookupEnv("DB")
 	if ok {
 		config.DB = dsn
+	}
+	if config.Listen == "" {
+		config.Listen = ":8080"
 	}
 
 	mapper := MetricMapperMap{}
@@ -80,7 +84,8 @@ func main() {
 			fmt.Fprintf(w, "strichliste_%s %f\n", k, v)
 		}
 	})
-	http.ListenAndServe(":8080", nil)
+	log.Printf("Listening on %s", config.Listen)
+	http.ListenAndServe(config.Listen, nil)
 }
 
 func metric(db *sql.DB, mapper MetricMapperMap) (metrics Metrics) {
