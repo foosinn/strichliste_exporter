@@ -89,6 +89,11 @@ func metric(db *sql.DB, mapper MetricMapperMap) (metrics Metrics) {
 	defer cancel()
 
 	c, err := db.Conn(ctx)
+	if err != nil {
+		println(err.Error())
+		return Metrics{"error{msg=\"connection error\"}": 1}
+	}
+	defer c.Close()
 	q := `
 	    select
 		count(t.id) count,
@@ -113,24 +118,67 @@ func metric(db *sql.DB, mapper MetricMapperMap) (metrics Metrics) {
 	for rows.Next() {
 		r := StatsRow{}
 		rows.Scan(&r.Count, &r.Name)
+
+		// group based
 		mi, ok := mapper[r.Name]
 		if !ok {
 			metrics["not_found"]++
-			continue
+		} else {
+			key := fmt.Sprintf(
+				"%s{category=\"%s\", name=\"%s\"}",
+				mi.Group,
+				mi.Category,
+				mi.Name,
+			)
+			value := mi.Factor * float64(r.Count)
+			_, ok = metrics[key]
+			if !ok {
+				metrics[key] = value
+			} else {
+				metrics[key] += value
+			}
 		}
-		key := fmt.Sprintf(
-			"%s{category=\"%s\", name=\"%s\"}",
-			mi.Group,
-			mi.Category,
-			mi.Name,
-		)
-		value := mi.Factor * float64(r.Count)
+
+		// general counter
+		value := float64(r.Count)
+		key := fmt.Sprintf("counter{name=\"%s\"}", r.Name)
 		_, ok = metrics[key]
 		if !ok {
 			metrics[key] = value
 		} else {
 			metrics[key] += value
 		}
+
+	}
+
+	bankstats := map[string]string{
+		"turnover": `select sum(amount) from transactions where amount < 0 limit 1`,
+		"charges":  `select sum(amount) from transactions where amount > 0 limit 1`,
+	}
+	for key, q := range bankstats {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		c, err := db.Conn(ctx)
+		if err != nil {
+			println(err.Error())
+			return Metrics{"error{msg=\"connection error\"}": 1}
+		}
+		rows, err = c.QueryContext(ctx, q)
+		if err != nil {
+			println(err.Error())
+			return Metrics{"error{msg=\"query error\"}": 1}
+		}
+		rows.Next()
+		amount := 0
+		rows.Scan(&amount)
+		_, ok := metrics[key]
+		if !ok {
+			metrics[key] = float64(amount)
+		} else {
+			metrics[key] += float64(amount)
+		}
+
 	}
 	return
 }

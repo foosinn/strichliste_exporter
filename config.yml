@@ -1,12 +1,12 @@
-db: strichliste:strichliste@tcp(localhost:3306)/strichliste
+
 metrics_groups:
   getraenke:
     - name: Bier
-      article: Bier vom Fass 0.4 Liter
+      article: Bier vom Fass 0,4 Liter
       factor: .4
       category: bier
     - name: Bier
-      article: Bier vom Fass 0.5 Liter
+      article: Bier vom Fass 0,5 Liter
       factor: .5
       category: bier
 
@@ -19,12 +19,25 @@ metrics_groups:
       factor: .5
       category: mate
 
+    - name: Tschunk
+      article: Tschunk
+      factor: .4
+      category: drinks
+
     - name: Alkoholfreier Slush
       article: Alkoholfreier Slush
       factor: .4
       category: slush
     - name: Tschunk Slush
       article: Tschunk Slush
+      factor: .4
+      category: slush
+    - name: Gin Slush
+      article: Gin Slush
+      factor: .4
+      category: slush
+    - name: White Hat Slush
+      article: White Hat Slush
       factor: .4
       category: slush
 
