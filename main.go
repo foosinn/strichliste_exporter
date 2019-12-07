@@ -172,6 +172,7 @@ func metric(db *sql.DB, mapper MetricMapperMap) (metrics Metrics) {
 		} else {
 			metrics[key] += float64(amount)
 		}
+		rows.Close()
 
 	}
 	return
