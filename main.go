@@ -4,13 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	//"github.com/k0kubun/pp"
-	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -49,7 +48,7 @@ func main() {
 	}
 	configReader, err := os.Open(configFile)
 	if err != nil {
-		logrus.Fatalf("unable to open configfile: %s", err)
+		log.Fatalf("unable to open configfile: %s", err)
 	}
 	config := Config{}
 	yaml.NewDecoder(configReader).Decode(&config)
@@ -68,11 +67,11 @@ func main() {
 
 	db, err := sql.Open("mysql", config.DB)
 	if err != nil {
-		logrus.Fatalf("unable to load database config: %s", err)
+		log.Fatalf("unable to load database config: %s", err)
 	}
 	err = db.Ping()
 	if err != nil {
-		logrus.Fatalf("unable to connect to database: %s", err)
+		log.Fatalf("unable to connect to database: %s", err)
 	}
 
 	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
@@ -90,7 +89,7 @@ func metric(db *sql.DB, mapper MetricMapperMap) (metrics Metrics) {
 
 	c, err := db.Conn(ctx)
 	if err != nil {
-		println(err.Error())
+		log.Printf("unable to connect to database: %s", err)
 		return Metrics{"error{msg=\"connection error\"}": 1}
 	}
 	defer c.Close()
@@ -159,14 +158,9 @@ func metric(db *sql.DB, mapper MetricMapperMap) (metrics Metrics) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		c, err := db.Conn(ctx)
-		if err != nil {
-			println(err.Error())
-			return Metrics{"error{msg=\"connection error\"}": 1}
-		}
 		rows, err = c.QueryContext(ctx, q)
 		if err != nil {
-			println(err.Error())
+			log.Printf("unable to query: %s", err)
 			return Metrics{"error{msg=\"query error\"}": 1}
 		}
 		rows.Next()
